@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block content %}
+<meta charset="UTF-8">
+<title>Profil Saya</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  body {
+    background-color: #f2f4f8;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .profile-card {
+    max-width: 420px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  }
+
+  .profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .profile-header img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #eee;
+    border: 3px solid #3E3A9F;
+  }
+
+  .profile-header h5 {
+    margin-top: 0.8rem;
+    font-weight: 700;
+    color: #3E3A9F;
+  }
+
+  .profile-header small {
+    color: #6c757d;
+  }
+
+  .balance-card {
+    background: #C7F3F8;
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .balance-item {
+    text-align: center;
+  }
+
+  .balance-item h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #4B4B63;
+  }
+
+  .balance-item p {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .referral-box {
+    background: #f9f9ff;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px dashed #3E3A9F;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .referral-code {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #3E3A9F;
+    margin-bottom: 0.8rem;
+  }
+
+  .btn-referral {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background-color: #3E3A9F;
+    border: none;
+  }
+
+  .btn-outline-primary {
+    border-color: #3E3A9F;
+    color: #3E3A9F;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #3E3A9F;
+    color: white;
+  }
+
+  .btn-logout {
+    background-color: #ff4d4d;
+    border: none;
+  }
+
+  .btn-logout:hover {
+    background-color: #d63333;
+  }
+</style>
+
+<div class="profile-card">
+  <!-- Header Profil -->
+  <div class="profile-header">
+    <img src="{{ user.avatar }}" alt="Avatar">
+    <h5>{{ user.name }}</h5>
+    <small>{{ user.email }}</small>
+  </div>
+
+  <script>
+    // Sinkronkan angka dari dashboard header jika ada
+    document.addEventListener("DOMContentLoaded", () => {
+      const headerCandy = document.getElementById("candy-count");
+      const headerDiamond = document.getElementById("diamond-count");
+
+      if (headerCandy && headerDiamond) {
+        document.getElementById("profile-candy").textContent = headerCandy.textContent;
+        document.getElementById("profile-diamond").textContent = headerDiamond.textContent;
+
+        // Update otomatis tiap 500ms
+        setInterval(() => {
+          document.getElementById("profile-candy").textContent = headerCandy.textContent;
+          document.getElementById("profile-diamond").textContent = headerDiamond.textContent;
+        }, 500);
+      }
+    });
+  </script>
+
+  <!-- Kode Referral -->
+  <div class="referral-box">
+    <div class="referral-code" id="refCode">{{ user.referral_code | default('ABC123') }}</div>
+    <div class="btn-referral">
+      <button class="btn btn-sm btn-outline-primary" onclick="copyReferral()">📋 Salin</button>
+      <button class="btn btn-sm btn-primary" onclick="shareReferral()">📤 Bagikan</button>
+    </div>
+  </div>
+
+  <!-- Logout -->
+  <a href="{{ url_for('logout') }}" class="btn btn-logout w-100 text-white">Logout</a>
+</div>
+
+<script>
+  function copyReferral() {
+    const code = document.getElementById("refCode").innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      alert("Kode referral disalin!");
+    });
+  }
+
+  function shareReferral() {
+    const code = document.getElementById("refCode").innerText;
+    const link = `https://namasitus.com/register?ref=${code}`;
+    if (navigator.share) {
+      navigator.share({
+        title: "Yuk join game CandyGold!",
+        text: "Mainin CandyGold bareng aku, kumpulin Candy & hadiah!",
+        url: link
+      });
+    } else {
+      navigator.clipboard.writeText(link);
+      alert("Link undangan disalin!");
+    }
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+
+
+
+
+
+
+
+

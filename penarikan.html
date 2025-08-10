@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="text-center mb-4">
+    <h2 class="fw-bold text-dark">💰 Penarikan</h2>
+    <p class="text-muted">Tukarkan permenmu menjadi uang nyata!</p>
+  </div>
+
+  <div class="card shadow border-0 p-4" style="background: #fff;">
+    <div class="text-center">
+    <!-- Ikon Riwayat -->
+    <button id="historyBtn" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; cursor: pointer;" title="Lihat Riwayat">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="#4B4B63" viewBox="0 0 24 24">
+        <path d="M12 8v5h5v-2h-3V8h-2zm0-6C6.48 2 2 6.48 2 12h2a8 8 0 1 1 8 8c-3.4 0-6.29-2.14-7.41-5H8v-2H2v6h2v-1.53A10.003 10.003 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/>
+      </svg>
+    </button>
+      <h4 class="fw-bold mb-0" style="color: #FFD700;">
+        <img src="{{ url_for('static', filename='img/candy.png') }}" alt="Candy" width="32" class="me-1">
+        {{ candy_balance }} Permen
+      </h4>
+      <p class="text-muted mb-0" style="font-size: 0.9rem;">(≈ Rp {{ '{:,.0f}'.format(rupiah_estimate) }})</p>
+    </div>
+
+
+    <hr class="my-4">
+
+    <div class="text-center mb-3">
+      <p class="mb-1">Pilih metode penarikan:</p>
+      <button class="btn btn-outline-dark me-2" onclick="showWithdrawOptions('DANA')">
+        <img src="{{ url_for('static', filename='img/dana.png') }}" alt="DANA" height="28" class="me-1">
+      </button>
+      <button class="btn btn-outline-dark" onclick="showWithdrawOptions('ShopeePay')">
+        <img src="{{ url_for('static', filename='img/shopeepay.png') }}" alt="ShopeePay" height="28" class="me-1">
+      </button>
+    </div>
+
+    <!-- Grid Pilihan Penarikan -->
+    <div id="withdrawOptionsContainer" class="row row-cols-1 row-cols-md-2 g-3 px-2"></div>
+  </div>
+
+  <!-- Popup Riwayat -->
+  <div id="historyPopup" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 1rem; padding: 1.5rem; max-width: 500px; width: 95%; max-height: 80vh; overflow-y: auto; position: relative;">
+      <button onclick="closeHistory()" style="position:absolute; top:0.5rem; right:1rem; background:none; border:none; font-size:1.2rem; color:#999; cursor:pointer;">×</button>
+      <h5 class="mb-3">📜 Riwayat Penarikan</h5>
+
+      {% if withdraw_history %}
+      <table class="table table-sm table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Tanggal</th>
+            <th>Metode</th>
+            <th>Permen</th>
+            <th>Rupiah</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in withdraw_history %}
+          <tr>
+            <td>{{ row[4][:10] }}</td>
+            <td>{{ row[0] }}</td>
+            <td>{{ "{:,}".format(row[1]) }}</td>
+            <td>Rp {{ "{:,}".format(row[2]) }}</td>
+            <td>
+              {% if row[3] == 'success' %}
+                <span class="badge bg-success">Berhasil</span>
+              {% elif row[3] == 'pending' %}
+                <span class="badge bg-warning text-dark">Diproses</span>
+              {% else %}
+                <span class="badge bg-danger">Gagal</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="text-muted">Belum ada penarikan.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div id="withdrawFormPopup" class="popup-alert" style="display:none;">
+    <div class="popup-content" style="background:white; border-radius: 1rem; padding: 1.5rem; width: 90%; max-width: 380px;">
+      <h5 class="mb-3">Konfirmasi Penarikan</h5>
+      <form id="finalWithdrawForm" method="POST" action="/withdraw">
+        <input type="hidden" name="method" id="inputMethod">
+        <input type="hidden" name="amount" id="inputAmount">
+        <div class="mb-2">
+          <label class="form-label">Nama Penerima</label>
+          <input type="text" name="nama" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nomor Tujuan</label>
+          <input type="text" name="nomor" class="form-control" required placeholder="Nomor DANA / ShopeePay">
+        </div>
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" onclick="hideWithdrawPopup()">Batal</button>
+          <button type="submit" class="btn btn-dark">Kirim</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="popupAlert" class="popup-alert" style="display: none;">
+    Permen kamu tidak cukup untuk penarikan!
+  </div>
+
+</div>
+
+<style>
+  #withdrawOptionsContainer .withdraw-card {
+    background-color: #fff6b7;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: 0.2s ease;
+    cursor: pointer;
+  }
+
+  #withdrawOptionsContainer .withdraw-card:hover {
+    background-color: #ffe96b;
+    transform: translateY(-3px);
+  }
+
+  .withdraw-card img {
+    height: 32px;
+    margin-right: 0.75rem;
+  }
+
+  .withdraw-card .info {
+    flex: 1;
+  }
+
+  .withdraw-card .info .permen {
+    font-weight: 600;
+    color: #3E3A9F;
+  }
+
+  .withdraw-card .info .rupiah {
+    font-size: 0.85rem;
+    color: #4B4B63;
+  }
+
+  .withdraw-card form {
+    margin: 0;
+  }
+
+  .withdraw-card button {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+  }
+
+  #historyBtn:hover svg {
+    fill: #3E3A9F;
+    transform: scale(1.1);
+    transition: 0.2s ease;
+  }
+
+  .popup-alert {
+    position: fixed;
+    bottom: 1.2rem; /* sedikit dipendekin dari bawah */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffe6e6;
+    padding: 0.6rem 1.2rem; /* dipendekin */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+    color: #a94442;
+    z-index: 9999;
+    animation: fadeSlideUp 0.5s ease, fadeSlideOut 0.5s ease 2.5s forwards;
+  }
+
+  /* Muncul naik */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  /* Hilang turun */
+  @keyframes fadeSlideOut {
+    to   { opacity: 0; transform: translate(-50%, 30px); }
+  }
+
+</style>
+
+<script>
+  const withdrawOptions = {
+    'DANA': [
+      { candy: 100000, rupiah: 10000 },
+      { candy: 200000, rupiah: 20000 },
+      { candy: 500000, rupiah: 50000 },
+    ],
+    'ShopeePay': [
+      { candy: 120000, rupiah: 12000 },
+      { candy: 250000, rupiah: 25000 },
+      { candy: 500000, rupiah: 50000 },
+    ]
+  };
+
+  function showWithdrawOptions(method) {
+    const container = document.getElementById("withdrawOptionsContainer");
+    container.innerHTML = "";
+
+    withdrawOptions[method].forEach(option => {
+      const card = document.createElement("div");
+      card.className = "col";
+      card.innerHTML = `
+        <div class="withdraw-card">
+          <img src="/static/img/${method.toLowerCase()}.png" alt="${method}">
+          <div class="info">
+            <div class="permen">${option.candy.toLocaleString()} Permen</div>
+            <div class="rupiah">≈ Rp ${option.rupiah.toLocaleString()}</div>
+          </div>
+          <button onclick="prepareWithdraw('${method}', ${option.rupiah}, ${option.candy})" class="btn btn-outline-dark">Tarik</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // ⬇⬇⬇ Tampilkan DANA saat halaman dimuat
+  window.addEventListener("DOMContentLoaded", () => {
+    showWithdrawOptions('DANA');
+  });
+
+  const historyBtn = document.getElementById("historyBtn");
+  const historyPopup = document.getElementById("historyPopup");
+
+  historyBtn.addEventListener("click", () => {
+    historyPopup.style.display = "flex";
+  });
+
+  function closeHistory() {
+    historyPopup.style.display = "none";
+  }
+
+  function showPopupAlert(message) {
+    const popup = document.getElementById('popupAlert');
+    popup.textContent = message;
+    popup.style.display = 'block';
+
+    // Reset animasi jika dipanggil berulang
+    popup.classList.remove('popup-alert');
+    void popup.offsetWidth; // force reflow
+    popup.classList.add('popup-alert');
+
+    // Sembunyikan manual setelah animasi selesai (backup)
+    setTimeout(() => {
+      popup.style.display = 'none';
+    }, 3000); 
+  }
+
+  function prepareWithdraw(method, rupiah, candyRequired) {
+    const userCandy = parseInt("{{ candy_balance|default(0) }}");
+    if (userCandy < candyRequired) {
+      showPopupAlert("Permen kamu tidak cukup!");
+      return;
+    }
+
+    // Isi nilai form
+    document.getElementById("inputMethod").value = method;
+    document.getElementById("inputAmount").value = rupiah;
+
+    // Tampilkan popup
+    const popup = document.getElementById("withdrawFormPopup");
+    popup.style.display = "flex";
+    popup.style.justifyContent = "center";
+    popup.style.alignItems = "center";
+  }
+
+  function hideWithdrawPopup() {
+    document.getElementById("withdrawFormPopup").style.display = "none";
+  }
+
+</script>
+
+{% endblock %}

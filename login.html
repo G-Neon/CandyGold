@@ -1,0 +1,91 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Masuk KlikCuan</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      background-color: #fef6ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+    }
+
+    .form-container {
+      background-color: #fff;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #3E3A9F;
+      margin-bottom: 24px;
+    }
+
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    .btn {
+      background-color: #3E3A9F;
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #2b2673;
+    }
+
+    .small-text {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+
+    .small-text a {
+      color: #3E3A9F;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="text-center my-3 text-muted">atau lanjut dengan</div>
+  <div class="d-flex justify-content-center gap-3 mb-3">
+    <button class="btn btn-outline-dark rounded-pill px-4">
+      <i class="bi bi-google me-2"></i> Google
+    </button>
+    <button class="btn btn-outline-primary rounded-pill px-4">
+      <i class="bi bi-facebook me-2"></i> Facebook
+    </button>
+  </div>
+
+  <a href="{{ url_for('google.login') }}" class="btn btn-light border w-100 mb-3">
+    <img src="/static/google-icon.png" alt="Google" style="width:20px; margin-right:10px;">
+    Masuk dengan Google
+  </a>
+
+  <p class="text-center mt-3">
+    Belum punya akun? <a href="/register">Daftar di sini</a>
+  </p>
+
+</body>
+</html>

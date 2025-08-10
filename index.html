@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🍭 CandyGold</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #FFF6B7 0%, #C7F3F8 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      color: #4B4B63;
+    }
+
+    header {
+      padding: 2rem 1rem 1rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      color: #4B4B63;
+    }
+
+    .hero-img {
+      width: 220px;
+      margin: 2rem 0;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .btn-play {
+      padding: 1rem 2rem;
+      background-color: #3E3A9F;
+      color: white;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 1rem;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      transition: background-color 0.2s;
+      margin-top: 1.5rem;
+    }
+
+    .btn-play:hover {
+      background-color: #2e2a7f;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍬 CandyGold</h1>
+    <p>Koleksi poin dari mesin permen ajaib dan buka hadiah digital!</p>
+  </header>
+
+  <img src="https://cdn-icons-png.flaticon.com/512/4807/4807695.png" alt="Mesin Permen" class="hero-img" />
+
+  <a href="{{ url_for('dashboard') }}">
+    <button class="btn-play">Main Sekarang 🎮</button>
+  </a>
+
+  <footer>
+    © 2025 CandyGold by GummyNeon Co.
+  </footer>
+
+</body>
+</html>

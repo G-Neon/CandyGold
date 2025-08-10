@@ -1,0 +1,1400 @@
+{% extends "base.html" %}
+{% block content %}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CandyGold</title>
+  <style>
+    body {
+    font-family: 'Segoe UI', sans-serif;
+    background-size: 400% 400%;
+    animation: gradientFlow 6s ease infinite;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    }
+
+    html {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    }
+
+    /* HEADER */
+
+    header {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .left-info {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-text .username {
+      font-weight: bold;
+      font-size: 1rem;
+      color: #1A1A29;
+    }
+
+    .user-text .level {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    .right-info {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .candy-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .candy-count {
+      font-weight: bold;
+      color: #4B4B63;
+    }
+
+    /* Popup Profil */
+    .profile-popup {
+      position: absolute;
+      top: 90px;
+      left: 1rem;
+      background: white;
+      padding: 1.2rem;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      min-width: 220px;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease;
+      display: none;
+    }
+
+    .popup-inner {
+      text-align: center;
+    }
+
+    .popup-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid #FFF6B7;
+      object-fit: cover;
+      margin-bottom: 0.6rem;
+    }
+
+    .popup-name {
+      font-weight: bold;
+      font-size: 1rem;
+      color: #3E3A9F;
+    }
+
+    .popup-email {
+      font-size: 0.85rem;
+      color: #777;
+      margin-bottom: 0.8rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    /* VENDING */
+    .vending-container {
+    margin-top: 3rem;
+    position: relative;
+    animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+    }
+
+    .vending-img {
+      width: 410px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.15));
+      /* ↑ Ini yang bikin bayangan */
+    }
+
+    .vending-img:active {
+    transform: scale(0.95);
+    }
+
+    @keyframes tapSquish {
+      0%   { transform: scale(1); }
+      20%  { transform: scale(1.05); }
+      50%  { transform: scale(0.92); }
+      100% { transform: scale(1); }
+    }
+
+    .tap-animate {
+      animation: tapSquish 0.3s ease;
+    }
+
+    .vending-shadow {
+      width: 180px;
+      height: 25px;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 50%;
+      margin: 0 auto;
+      margin-top: -5px;
+      filter: blur(2px);
+      z-index: 0;
+    }
+
+    /* +1 EFFECT */
+    .tap-effect {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    color: #ffcb00;
+    animation: pop 0.5s ease-out;
+    pointer-events: none;
+    font-weight: bold;
+    }
+
+    @keyframes pop {
+      0% { opacity: 1; transform: translate(-50%, -10px); }
+      100% { opacity: 0; transform: translate(-50%, -60px); }
+    }
+
+    .cart-icon {
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-left: 1rem;
+      background-color: #FFF6B7;
+      padding: 0.5rem 0.8rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
+    }
+
+    .cart-icon:hover {
+      transform: scale(1.0);
+      background-color: transparent;
+    }
+
+    .cart-popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      display: none; /* penting: none default */
+    }
+
+    .cart-popup.show {
+      display: flex; /* aktifkan flex layout */
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .cart-popup-inner {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      animation: slideUp 0.4s ease;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f8f8;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .cart-item img {
+      width: 60px;
+      height: 60px;
+      margin-right: 1rem;
+    }
+
+    .cart-item-info {
+      flex-grow: 1;
+    }
+
+    .cart-icon-floating {
+      position: fixed;
+      top: 150px;
+      left: 1rem;
+      cursor: pointer;
+      z-index: 1000;
+      background-color: #ffedba;
+      border-radius: 20%;
+      padding: 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.1s ease;
+    }
+
+    .referral-icon-floating {
+      position: fixed;
+      top: 220px;
+      right: 1rem; /* ganti dari left: 30rem */
+      cursor: pointer;
+      z-index: 1000;
+      background-color: #ffedba;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease;
+    }
+
+    .referral-icon-floating:hover {
+      transform: scale(0.95);
+    }
+
+    .referral-icon-floating img {
+      width: 44px;
+      height: 44px;
+    }
+
+    .cart-icon-floating:hover {
+      transform: scale(1.0);
+      background-color: transparent;
+    }
+
+    .cart-icon-floating:active {
+      transform: translateY(2px) scale(0.97);
+      background-color: transparent;
+      box-shadow: none;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0 }
+      to { opacity: 1 }
+    }
+
+    .tap-limit-info {
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #tapCounter {
+      color: #4B4B63;
+    }
+
+    #cooldownMessage {
+      font-size: 0.95rem;
+    }
+
+    @keyframes sparkle {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(1.5) translateY(-50px); opacity: 0; }
+    }
+
+  .tap-effect {
+      position: absolute;
+      z-index: 1000;
+      color: #f7e7c1;
+      font-weight: bold;
+      font-size: 30px;
+      animation: riseFade 1s ease forwards;
+    }
+
+    @keyframes riseFade {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-40px); opacity: 0; }
+    }
+
+    .candy-particle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      animation: sparkle 1s ease-out forwards;
+    }
+
+    @keyframes sparkle {
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: scale(0.5) rotate(360deg); opacity: 0; }
+    }
+
+    .invite-icon-floating {
+      position: fixed;
+      top: 150px;
+      left: 4rem; /* kanan sedikit dari keranjang */
+      cursor: pointer;
+      z-index: 1000;
+      background: transparent;
+      padding: 0.5rem;
+      transition: transform 0.2s ease;
+    }
+
+    .invite-icon-floating:hover {
+      transform: scale(0.95);
+    }
+
+    #checkinIconBtn {
+      all: unset;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 20;
+      cursor: pointer;
+    }
+
+    #checkinIconBtn img {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    #checkinPopup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .checkin-inner {
+      background: #fff;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #888;
+    }
+
+    .section-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .checkin-bar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    .reward {
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    .checkin-button {
+      padding: 0.3rem 0.5rem;
+      border-radius: 1rem;
+      border: none;
+      background: #FFF6B7;
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+
+    .checkin-button.claimed {
+      background: #ddd;
+      color: #444;
+      cursor: default;
+    }
+
+    .task-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .task-title {
+      font-size: 0.9rem;
+      flex: 1;
+    }
+
+    .task-reward {
+      font-weight: bold;
+      margin: 0 0.5rem;
+      color: #333;
+    }
+
+    .task-button {
+      background-color: #FFF6B7;
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 1rem;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .checkin-icon-floating {
+      position: fixed;
+      top: 150px;
+      right: 1rem; /* ganti dari left: 30rem */
+      /* atau: right: 5rem; jika ingin sedikit lebih ke kiri */
+      cursor: pointer;
+      z-index: 1000;
+      background-color: #ffedba;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .checkin-icon-floating img {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+    }
+
+    .checkin-icon-floating:hover {
+      transform: scale(0.95);
+    }
+
+    .tap-stamina-bar {
+      width: 320px;
+      height: 18px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+      margin: 1rem auto 0;
+    }
+
+    #tapStaminaFill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(to right, #a8e063, #56ab2f);
+      transition: width 0.3s ease;
+    }
+
+    #cooldownTimer {
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .tooltip-icon {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      background: rgba(0, 0, 0, 0.08);
+      color: #444;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      z-index: 2;
+      transition: background 0.2s ease;
+    }
+
+    .tooltip-icon:hover {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .tooltip-box {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      background: white;
+      color: #333;
+      padding: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      font-size: 0.75rem;
+      white-space: normal;
+      width: 150px;
+      z-index: 10;
+      display: none;
+    }
+
+    @keyframes bounceTap {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.08); }
+      60%  { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+
+    .vending.bouncing {
+      animation: bounceTap 0.15s ease;
+    }
+
+  </style>
+</head>
+<body>
+ <header>
+    <div class="left-info">
+      <img src="{{ session.user_avatar }}" class="user-avatar" alt="User">
+      <div class="user-text">
+        <div class="username">{{ session.user_name }}</div>
+        <div class="header-user-sub">Rp <span id="wallet-amount">0</span></div>
+      </div>
+    </div>
+    <div class="right-info">
+      <img src="/static/img/candy.png" class="candy-icon" alt="Candy" />
+      <span class="candy-count" id="candy-count">0</span>
+      <img src="/static/img/diamond.png" style="width: 20px; height: 20px; margin-left: 12px;">
+      <span id="diamond-count">{{ user.diamond_balance | default(0) }}</span>
+    </div>
+  </header>
+
+    <!-- Modern Profile Popup -->
+    <div id="profilePopup" class="profile-popup">
+      <div class="popup-inner">
+        <img src="{{ session.user_avatar }}" class="popup-avatar" alt="Avatar">
+        <div class="popup-name">{{ session.user_name }}</div>
+        <div class="popup-email">{{ session.user_email }}</div>
+        <hr style="opacity: 0.2;">
+        <button onclick="toggleProfilePopup()" class="btn btn-outline-danger w-100 mt-2">Tutup</button>
+      </div>
+    </div>
+
+  <!-- Vending Wrapper (static) -->
+  <div class="vending-wrapper" style="position: relative; display: inline-block;">
+    
+  <div id="statusText" class="mt-3 fw-semibold text-center" style="color:#4B4B63; font-size: 1rem;">
+    💬 Siap kumpulin permen hari ini?
+  </div>
+
+
+    <!-- Vending floating -->
+  <div class="vending-container">
+    <img src="{{ url_for('static', filename='img/vendingmachine.png') }}" alt="Vending Machine" class="vending-img" id="vendingMachine">
+    <div class="vending-shadow"></div> <!-- Tambahkan ini -->
+    <div class="tap-limit-info text-center mt-3">
+    <div id="tapCounter" class="fw-bold fs-5">0 / 100</div>
+      <div id="cooldownMessage" class="text-danger mt-2" style="display: none;">
+        ⏳ Limit tercapai! Tunggu <span id="cooldownTime">--:--</span> untuk reset.
+      </div>
+    </div>
+    <div id="activeBoostersDisplay" style="position: absolute; top: 0; right: -130px; display: flex; flex-direction: column; gap: 1rem;">
+      <!-- Booster aktif akan muncul di sini -->
+    </div>
+  </div>
+
+  <div id="activeBoostersDisplay" style="position: absolute; top: 0; right: -130px; display: flex; flex-direction: column; gap: 1rem;">
+    <!-- Slot booster akan ditambahkan lewat JS -->
+  </div>
+
+  <div id="cooldownTimer" class="text-center text-muted mt-2" style="display: none; font-size: 0.85rem;">
+    Bisa tap lagi dalam <span id="cooldownCountdown">00:00</span>
+  </div>
+
+  <!-- BATTERY/STAMINA BAR -->
+  <div class="tap-stamina-bar mt-3">
+    <div id="tapStaminaFill"></div>
+  </div>
+
+  <div class="checkin-icon-floating" onclick="openCheckinPopup()">
+    <img src="{{ url_for('static', filename='img/tugasharian.png') }}" alt="Check-in" />
+  </div>
+
+  <div id="checkinPopup">
+    <div class="checkin-inner">
+      <button class="close-btn" onclick="closeCheckinPopup()">✖</button>
+
+      <div class="section-title">🎁 Check-in Harian</div>
+      <div class="checkin-bar">
+        {% for i in range(1, 8) %}
+        <div class="checkin-day">
+          <div>hari {{ i }}</div>
+          <div class="reward">{{ rewards[i-1] }}</div>
+          <button class="checkin-button {% if checkins[i-1] %}claimed{% endif %}" data-day="{{ i }}" onclick="claimCheckin(this)">
+            {% if not checkins[i-1] %}Klaim{% endif %}
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="section-title mt-3">📝 Tugas Harian</div>
+      <ul class="task-list">
+        {% for task in tasks %}
+        <li class="task-item">
+          <span class="task-title">{{ task.title }}</span>
+          <span class="task-reward">{{ task.reward }}</span>
+          {% if task.claimed %}
+            <span class="badge bg-success">✔</span>
+          {% elif task.status == 'done' %}
+            <button class="task-button" onclick="claimTask(this, '{{ task.title }}')">Klaim</button>
+          {% else %}
+            <a href="{{ task.link }}" class="task-button" target="_blank">Cek</a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Ikon Referral -->
+  <div class="referral-icon-floating" onclick="openReferralPopup()">
+    <img src="/static/img/gift.png" alt="Referral" style="width: 50px; height: 50px;" />
+  </div>
+
+  <!-- Popup Referral -->
+  <div id="referralPopup" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; backdrop-filter: blur(4px);">
+    <div class="p-4 rounded-4 shadow-lg mx-auto mt-5" 
+        style="max-width: 420px; background: linear-gradient(145deg, #fff6b7, #ffeaa7); position: relative; border: 3px solid #ffcc70;">
+
+      <!-- Tombol Close -->
+      <button onclick="closeReferralPopup()" 
+              style="position: absolute; top: 0.2rem; right: 0.4rem; border: none; background: none; font-size: 1.3rem; color: #ff6b6b; cursor: pointer;">
+        ✖
+      </button>
+
+      <!-- Judul -->
+      <h3 class="mb-2 text-center" style="color: #ff6b6b; font-weight: 800;">🎁 Undang Teman & Dapatkan Candy!</h3>
+      <p class="text-center" style="font-size: 0.95rem; color: #4b4b63;">
+        Salin kode referral kamu dan bagikan ke temanmu.</strong>
+      </p>
+
+      <!-- Masukkan Kode Teman -->
+      <form method="POST" action="/submit_referral_code" class="mt-4">
+        <div class="mb-3">
+          <label for="inputCode" class="form-label" style="font-weight: 600; color: #4b4b63;">Masukkan Kode Teman</label>
+          <input name="ref_code_input" id="inputCode" class="form-control rounded-pill shadow-sm" style="border: 2px solid #ffcc70;" required>
+        </div>
+        <button class="btn w-100 rounded-pill shadow-sm" type="submit" 
+                style="background-color: #ff6b6b; color: white; font-weight: bold;">Klaim 10.000 Candy</button>
+      </form>
+
+      <hr class="my-4" style="border-top: 2px dashed #ffcc70;">
+
+      <!-- Tips -->
+      <p class="text-center" style="font-size: 0.85rem; color: #6c757d;">
+        🎯 Ajak lebih banyak teman untuk kumpulin Candy lebih cepat!
+      </p>
+
+    </div>
+  </div>
+
+  <div class="cart-icon-floating" onclick="toggleCartPopup()">
+    <img src="/static/img/shop cart.png" alt="Cart" style="width: 50px; height: 50px;" />
+  </div>
+
+  </div>
+
+  <script>
+    let isCooldown = false;
+    let tapCount = 0;
+    const maxTaps = 100;
+    let resetTime = null;
+    let candyCount = Number("{{ user.candy_balance | default(0) }}") || 0;
+    let maxTap = 100;
+    let cooldownInterval;
+    let tapCountForStatus = 0;
+    let walletAmount = 0;
+    let diamondCount = Number("{{ user.diamond_balance | default(0) }}") || 0;
+
+    const vendingMachine = document.getElementById("vendingMachine");
+    const candyCounter = document.getElementById("candy-count");
+    const tapCounter = document.getElementById("tapCounter");
+    const cooldownMessage = document.getElementById("cooldownMessage");
+    const cooldownTime = document.getElementById("cooldownTime");
+
+    document.addEventListener("DOMContentLoaded", function() {
+      let initialCandy = Number(document.getElementById("candy-count").textContent) || 0;
+      walletAmount = initialCandy;
+      let rupiahValue = walletAmount * 0.01;
+      document.getElementById("wallet-amount").textContent =
+        rupiahValue.toLocaleString("id-ID", { minimumFractionDigits: 2 });
+    });
+
+        // Ambil dari localStorage
+    if (localStorage.getItem('tapCount')) {
+      tapCount = parseInt(localStorage.getItem('tapCount'));
+      tapCounter.textContent = `Tap: ${tapCount} / ${maxTap}`;
+      updateStaminaBar();
+    }
+
+    if (localStorage.getItem('resetTime')) {
+      resetTime = parseInt(localStorage.getItem('resetTime'));
+      restoreCooldown();
+    }
+
+    const statusMessages = [
+      "💪 Semangat terus, penambang permen!",
+      "✨ Permen impianmu menanti!",
+      "🔥 Jangan berhenti sekarang!",
+      "🎯 1 tap lagi menuju kemenangan!",
+      "🎉 Permen gratis? Gaskan terus!",
+      "💼 Ini kerjaan bukan main-main!"
+    ];
+
+    vendingMachine.addEventListener("click", function () {
+      if (tapCount >= maxTap || isCooldown) return;
+
+      let gain = 1;
+      if (activeBoosters.tapMultiplier) gain = 2;
+      if (activeBoosters.hyperTap) gain = 3;
+
+      candyCount += gain;
+      tapCount++;
+      addToWallet(gain);
+
+      tapCount++;
+      tapCountForStatus++;
+
+      updateStaminaBar();
+      localStorage.setItem('tapCount', tapCount);
+
+      // Tambah candy di UI
+      candyCounter.textContent = candyCount;
+      tapCounter.textContent = `Tap: ${tapCount} / ${maxTap}`;
+      addToWallet(1); // +1 ke dompet
+
+      // Kirim ke server
+      fetch('/add-candy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 1 })
+      });
+
+      // Efek visual vending + partikel...
+      // (yang ini biarkan seperti yang sudah kamu punya)
+      
+      // Mulai cooldown kalau sudah mentok
+      if (tapCount >= maxTap) startCooldown();
+    });
+
+      localStorage.setItem('tapCount', tapCount);
+      tapCountForStatus++;
+      candyCounter.textContent = candyCount;
+      tapCounter.textContent = `Tap: ${tapCount} / ${maxTap}`;
+      addToWallet(1); // +1 ke dompet
+
+      // Animasi vending tap
+      vendingMachine.classList.remove("tap-animate");
+      void vendingMachine.offsetWidth;
+      vendingMachine.classList.add("tap-animate");
+
+      // Efek teks +1
+      const plusOne = document.createElement("div");
+      plusOne.textContent = "+1";
+      plusOne.className = "tap-effect";
+      const rect = vendingMachine.getBoundingClientRect();
+      plusOne.style.left = rect.left + vendingMachine.offsetWidth / 2 + "px";
+      plusOne.style.top = rect.top + vendingMachine.offsetHeight / 2 + "px";
+      document.body.appendChild(plusOne);
+      setTimeout(() => plusOne.remove(), 1000);
+
+      // Efek partikel tiap 10 tap
+      if (candyCount % 10 === 0) {
+        for (let i = 0; i < 5; i++) {
+          const candyParticle = document.createElement("img");
+          candyParticle.src = "/static/img/candy.png";
+          candyParticle.className = "candy-particle";
+          candyParticle.style.left = (rect.left + vendingMachine.offsetWidth / 2 + Math.random() * 60 - 30) + "px";
+          candyParticle.style.top = (rect.top + Math.random() * 60 - 30) + "px";
+          document.body.appendChild(candyParticle);
+          setTimeout(() => candyParticle.remove(), 1000);
+        }
+      }
+
+      // Tampilkan status motivasi
+      if (tapCountForStatus % 5 === 0) {
+        const randomStatus = statusMessages[Math.floor(Math.random() * statusMessages.length)];
+        document.getElementById("statusText").textContent = randomStatus;
+      }
+
+      // Mulai cooldown jika sudah 100 tap
+      if (tapCount >= maxTap) {
+        startCooldown();
+      }
+    ;
+
+    function restoreCooldown() {
+      const now = new Date().getTime();
+      const distance = resetTime - now;
+
+      if (distance <= 0) {
+        // Cooldown sudah habis
+        tapCount = 0;
+        updateStaminaBar();
+        localStorage.removeItem('tapCount');
+        localStorage.removeItem('resetTime');
+        document.getElementById('cooldownTimer').style.display = 'none';
+      } else {
+        // Lanjutkan timer
+        document.getElementById('cooldownTimer').style.display = 'block';
+        updateStaminaBar();
+        document.getElementById('cooldownCountdown').textContent = formatTime(distance);
+        
+        const rechargeInterval = setInterval(() => {
+          const now = new Date().getTime();
+          const distance = resetTime - now;
+
+          if (distance <= 0) {
+            clearInterval(rechargeInterval);
+            tapCount = 0;
+            localStorage.removeItem('tapCount');
+            localStorage.removeItem('resetTime');
+            updateStaminaBar();
+            document.getElementById('cooldownTimer').style.display = 'none';
+          } else {
+            const remainingRatio = distance / (30 * 60 * 1000);
+            tapCount = Math.floor(maxTaps * remainingRatio);
+            updateStaminaBar();
+            document.getElementById('cooldownCountdown').textContent = formatTime(distance);
+          }
+        }, 1000);
+      }
+    }
+
+    function startCooldown() {
+      isCooldown = true;
+      resetTime = new Date().getTime() + 30 * 60 * 1000;
+      localStorage.setItem('resetTime', resetTime);
+      
+      document.getElementById('cooldownTimer').style.display = 'block';
+
+      const rechargeInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = resetTime - now;
+
+        if (distance <= 0) {
+          tapCount = 0;
+          isCooldown = false; // ⬅️ izinkan tap kembali
+          updateStaminaBar();
+          clearInterval(rechargeInterval);
+          localStorage.removeItem('tapCount');
+          localStorage.removeItem('resetTime');
+          document.getElementById('cooldownTimer').style.display = 'none';
+        } else {
+          const remainingRatio = distance / (30 * 60 * 1000);
+          tapCount = Math.floor(maxTaps * remainingRatio);
+          updateStaminaBar();
+          document.getElementById('cooldownCountdown').textContent = formatTime(distance);
+        }
+      }, 1000);
+    }
+
+    function updateCooldown() {
+      const now = new Date().getTime();
+      const distance = resetTime - now;
+
+      if (distance <= 0) {
+        clearInterval(cooldownInterval);
+        tapCount = 0;
+        tapCounter.textContent = `Tap: ${tapCount} / ${maxTap}`;
+        cooldownMessage.style.display = "none";
+        vendingMachine.style.pointerEvents = "auto";
+        return;
+      }
+
+      const minutes = Math.floor(distance / 60000);
+      const seconds = Math.floor((distance % 60000) / 1000);
+      cooldownTime.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      updateStaminaBar();
+    }
+
+    function addToWallet(amount) {
+      walletAmount += amount;
+      let rupiahValue = walletAmount * 0.01;
+      document.getElementById("wallet-amount").textContent =
+        rupiahValue.toLocaleString("id-ID", { minimumFractionDigits: 2 });
+    }
+
+    function toggleProfilePopup() {
+      const popup = document.getElementById("profilePopup");
+      if (popup.style.display === "block") {
+        popup.style.animation = "fadeOut 0.25s ease forwards";
+        setTimeout(() => {
+          popup.style.display = "none";
+        }, 250);
+      } else {
+        popup.style.display = "block";
+        popup.style.animation = "fadeIn 0.3s ease forwards";
+      }
+    }
+
+    window.addEventListener('click', function (e) {
+      const popup = document.getElementById("profilePopup");
+      const button = document.querySelector(".header-user-btn");
+      if (popup && popup.style.display === "block" && !popup.contains(e.target) && !button.contains(e.target)) {
+        popup.style.animation = "fadeOut 0.25s ease forwards";
+        setTimeout(() => {
+          popup.style.display = "none";
+        }, 250);
+      }
+    });
+
+    function toggleCartPopup() {
+      const popup = document.getElementById("cartPopup");
+      popup.classList.toggle("show");
+    }
+
+    let ownedItems = {};
+
+    function buyItem(item, price) {
+      if (ownedItems[item]) {
+        alert("✅ Item sudah aktif!");
+        return;
+      }
+
+      // Harga pakai Diamond
+      if (typeof price === "string" && price.startsWith("diamond:")) {
+        const amount = parseInt(price.split(":")[1]);
+        if (diamondCount >= amount) {
+          diamondCount -= amount;
+          document.getElementById("diamond-count").textContent = diamondCount;
+          ownedItems[item] = true;
+          activateItemUI(item);
+          alert("💎 Booster berhasil dibeli dengan Diamond!");
+          // Jalankan efek booster
+          triggerBoosterEffect(item);
+        } else {
+          alert("❌ Diamond tidak cukup!");
+        }
+        return;
+      }
+
+      // Harga pakai Candy biasa
+      const current = parseInt(document.getElementById("candy-count").textContent);
+      if (current >= price) {
+        document.getElementById("candy-count").textContent = current - price;
+        ownedItems[item] = true;
+        activateItemUI(item);
+        alert("🍬 Booster berhasil dibeli!");
+        triggerBoosterEffect(item);
+      } else {
+        alert("❌ Permen tidak cukup!");
+      }
+    }
+
+    function activateItemUI(item) {
+      const itemBox = document.getElementById(`cart-${item}`);
+      itemBox.classList.add("active-item");
+      const button = itemBox.querySelector("button");
+      button.textContent = "✅ Aktif";
+      button.disabled = true;
+      button.classList.remove("btn-warning");
+      button.classList.add("btn-success");
+    }
+
+    function closeCart() {
+      const popup = document.getElementById("cartPopup");
+      popup.style.animation = "fadeOut 0.3s ease";
+      setTimeout(() => {
+        popup.classList.remove("show");
+        popup.style.animation = "";
+      }, 300);
+    }
+
+    function openReferralPopup() {
+      document.getElementById("referralPopup").style.display = "block";
+    }
+    function closeReferralPopup() {
+      document.getElementById("referralPopup").style.display = "none";
+    }
+    function copyReferralCode() {
+      const codeInput = document.getElementById("referralCode");
+      codeInput.select();
+      codeInput.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      alert("Kode referral disalin!");
+    }
+
+    function openCheckinPopup() {
+      document.getElementById("checkinPopup").style.display = "flex";
+    }
+    function closeCheckinPopup() {
+      document.getElementById("checkinPopup").style.display = "none";
+    }
+
+    function updateStaminaBar() {
+      const percentage = Math.max(0, 100 - (tapCount / maxTaps) * 100);
+      document.getElementById("tapStaminaFill").style.width = `${percentage}%`;
+    }
+
+    function formatTime(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const sec = String(totalSec % 60).padStart(2, '0');
+      return `${min}:${sec}`;
+    }
+
+    function tapCandy() {
+      if (stamina <= 0) return;
+
+      candyCount += 1;
+      stamina -= 1;
+      updateDisplay();
+
+      // Kirim hasil tap ke server
+      fetch('/add-candy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 1 })
+      });
+    }
+
+    let activeBoosters = {
+      autoTapper: false,
+      tapMultiplier: false,
+      hyperTap: false
+    };
+
+    let boosterTimers = {}; // untuk stop otomatis
+
+    switch (item) {
+      case "auto_tapper":
+        activateAutoTapper(15 * 60 * 1000); // 15 menit
+        break;
+      case "tap_multiplier":
+        activateTapMultiplier(15 * 60 * 1000);
+        break;
+      case "magnet":
+        addToWallet(500);
+        alert("🧲 Candy Magnet aktif! +500 Candy 🎉");
+        break;
+      case "hyper_tap":
+        activateHyperTap(60 * 1000);
+        break;
+    }
+
+    function activateAutoTapper(duration) {
+      if (activeBoosters.autoTapper) return;
+      activeBoosters.autoTapper = true;
+      let interval = setInterval(() => {
+        if (isCooldown) return; // skip jika cooldown
+        candyCount++;
+        addToWallet(1);
+        candyCounter.textContent = candyCount;
+      }, 2000); // tiap 2 detik
+
+      boosterTimers.autoTapper = setTimeout(() => {
+        clearInterval(interval);
+        activeBoosters.autoTapper = false;
+        alert("⏱ Auto Tapper selesai!");
+      }, duration);
+      showActiveBooster("auto_tapper", "/static/img/autotap.png", duration);
+    }
+
+    function activateTapMultiplier(duration) {
+      if (activeBoosters.tapMultiplier) return;
+      activeBoosters.tapMultiplier = true;
+
+      boosterTimers.tapMultiplier = setTimeout(() => {
+        activeBoosters.tapMultiplier = false;
+        alert("🐇 Tap Multiplier selesai!");
+      }, duration);
+      showActiveBooster("tap_multiplier", "/static/img/multiplier.png", duration);
+    }
+
+    function activateHyperTap(duration) {
+      if (activeBoosters.hyperTap) {
+        alert("⚡ Hyper Tap sedang aktif!");
+        return;
+      }
+
+      activeBoosters.hyperTap = true;
+      isCooldown = false; // nonaktifkan cooldown
+      document.getElementById('cooldownTimer').style.display = 'none';
+
+      boosterTimers.hyperTap = setTimeout(() => {
+        activeBoosters.hyperTap = false;
+        alert("⚡ Hyper Tap selesai!");
+      }, duration);
+      showActiveBooster("hyper_tap", "/static/img/hypertap.png", duration);
+    }
+
+    function showActiveBooster(id, iconPath, durationMs) {
+      const container = document.getElementById("activeBoostersDisplay");
+
+      // Cegah duplikat
+      if (document.getElementById("booster-" + id)) return;
+
+      const boosterBox = document.createElement("div");
+      boosterBox.id = "booster-" + id;
+      let bgColor = "#f0f0f0"; // default
+
+      switch (id) {
+        case "auto_tapper": bgColor = "#C7F3F8"; break;
+        case "tap_multiplier": bgColor = "#E2D8FF"; break;
+        case "magnet": bgColor = "#FFF6B7"; break;
+        case "hyper_tap": bgColor = "#FFC9C9"; break;
+        case "daily_deal": bgColor = "#D5F7C3"; break;
+      }
+
+      boosterBox.style = `
+        background: ${bgColor};
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        padding: 0.5rem;
+        width: 90px;
+        text-align: center;
+        font-size: 0.75rem;
+      `;
+
+      boosterBox.innerHTML = `
+        <div style="position: relative;">
+          <img src="${iconPath}" style="width: 40px; height: 40px; object-fit: contain; margin-bottom: 4px;">
+          
+          <!-- Ikon Info -->
+          <div class="tooltip-icon" onclick="showBoosterTooltip('${id}')">❔</div>
+          
+          <!-- Popup Tooltip -->
+          <div id="tooltip-${id}" class="tooltip-box" style="display: none;">
+            ${getBoosterDescription(id)}
+          </div>
+        </div>
+        <div id="timer-${id}">--:--</div>
+      `;
+
+      container.appendChild(boosterBox);
+
+      // Countdown timer
+      const endTime = Date.now() + durationMs;
+      const timerInterval = setInterval(() => {
+        const remaining = endTime - Date.now();
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          boosterBox.remove();
+        } else {
+          document.getElementById("timer-" + id).textContent = formatTime(remaining);
+        }
+      }, 1000);
+    }
+
+    function formatTime(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const sec = String(totalSec % 60).padStart(2, '0');
+      return `${min}:${sec}`;
+    }
+
+    function getBoosterDescription(id) {
+      switch (id) {
+        case "auto_tapper":
+          return "Mesin akan otomatis menambah 1 tap tiap 2 detik.";
+        case "tap_multiplier":
+          return "Setiap tap kamu bernilai ×2 Candy!";
+        case "magnet":
+          return "Langsung menarik 500 Candy secara instan.";
+        case "hyper_tap":
+          return "Tap dihitung ×3 dan bebas cooldown selama 60 detik.";
+        case "daily_deal":
+          return "Bonus harian berisi 3 item booster sekaligus.";
+        default:
+          return "Booster aktif.";
+      }
+    }
+
+    function showBoosterTooltip(id) {
+      const tooltip = document.getElementById("tooltip-" + id);
+      if (!tooltip) return;
+
+      tooltip.style.display = "block";
+
+      setTimeout(() => {
+        tooltip.style.display = "none";
+      }, 4000); // auto hide after 4 detik
+    }
+
+    function tapVending() {
+      const vending = document.getElementById('vending');
+      
+      // restart animasi bounce
+      vending.classList.remove('bouncing');
+      void vending.offsetWidth; // trik untuk reset animasi
+      vending.classList.add('bouncing');
+
+      // logika nambah poin tetap ada
+      // contoh:
+      fetch('/tap', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('points').textContent = data.points;
+          }
+        });
+    }
+
+    // pastikan event kliknya terpasang
+    document.getElementById('vending').addEventListener('click', tapVending);
+
+  </script>
+
+  <style>
+    @keyframes riseFade {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px);
+      }
+    }
+  </style>
+
+  <!-- Popup Profil -->
+  <div id="profilePopup" class="profile-popup">
+    <div class="profile-popup-content">
+      <h5 class="fw-bold mb-3">👤 Profil Kamu</h5>
+      <p><strong>Username:</strong> {{ session.user_name }}</p>
+      <p><strong>Email:</strong> {{ session.user_email }}</p>
+      <button class="btn btn-warning w-100 mt-3" onclick="closeProfilePopup()">Tutup</button>
+    </div>
+  </div>
+  
+    <!-- Popup Keranjang -->
+  <div id="cartPopup" class="cart-popup">
+    <button onclick="closeCart()" style="position: absolute; top: 5rem; right: 4rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">✖</button>
+    <div class="cart-popup-inner">
+      <h4 class="mb-3 fw-bold text-center">Booster</h4>
+
+      <div class="cart-item-list">
+        <!-- 🛒 TOKO TAP BOOSTER -->
+
+        <!-- 1. Auto-Tapper -->
+        <div id="cart-auto_tapper" class="cart-item">
+          <img src="/static/img/autotap.png" alt="Auto Tapper" />
+          <div class="cart-item-info">
+            <strong>⏱ Auto-Tapper</strong>
+            <small>Tambah 1 tap / 2 detik selama 15 menit</small>
+            <br>
+            <small class="text-muted">
+              <img src="/static/img/candy.png" style="width: 25px; height: 25px; object-fit: contain; vertical-align: middle;"> 300 
+          </div>
+          <button class="btn btn-warning btn-sm" onclick="buyItem('auto_tapper', 300)">Beli</button>
+        </div>
+
+        <!-- 2. Tap Multiplier -->
+        <div id="cart-tap_multiplier" class="cart-item">
+          <img src="/static/img/multiplier.png" alt="Tap Multiplier" />
+          <div class="cart-item-info">
+            <strong>🐇 Tap Multiplier ×2</strong>
+            <small>Setiap tap dihitung dobel selama 15 menit</small>
+            <br>
+            <small class="text-muted">
+              <img src="/static/img/candy.png" style="width: 25px; height: 25px; object-fit: contain; vertical-align: middle;"> 400 
+            </small>
+          </div>
+          <button class="btn btn-warning btn-sm" onclick="buyItem('tap_multiplier', 400)">Beli</button>
+        </div>
+
+        <!-- 3. Candy Magnet -->
+        <div id="cart-magnet" class="cart-item">
+          <img src="/static/img/magnet.png" alt="Candy Magnet" />
+          <div class="cart-item-info">
+            <strong>🧲 Candy Magnet</strong>
+            <small>Tarik 500 Candy instan (sekali pakai)</small>
+            <br>
+            <small class="text-muted">
+              <img src="/static/img/diamond.png" style="width: 27px; height: 27px; object-fit: contain; vertical-align: middle;"> 4
+            </small>
+          </div>
+          <button class="btn btn-warning btn-sm" onclick="buyItem('magnet', 'diamond:4')">Beli</button>
+        </div>
+
+        <!-- 4. Hyper Tap -->
+        <div id="cart-hyper_tap" class="cart-item">
+          <img src="/static/img/hypertap.png" alt="Hyper Tap" />
+          <div class="cart-item-info">
+            <strong>⚡ Hyper Tap</strong>
+            <small>Tap ×3 & no cooldown selama 60 detik</small>
+            <br>
+            <small class="text-muted">
+              <img src="/static/img/diamond.png" style="width: 27px; height: 27px; object-fit: contain; vertical-align: middle;"> 5 
+              | <em>1x per 6 jam</em>
+            </small>
+          </div>
+          <button class="btn btn-warning btn-sm" onclick="buyItem('hyper_tap', 'diamond:5')">Beli</button>
+        </div>
+
+        <!-- 5. Paket Harian -->
+        <div id="cart-daily_deal" class="cart-item">
+          <img src="/static/img/dailydeal.png" alt="Paket Harian" />
+          <div class="cart-item-info">
+            <strong>💼 Paket Harian</strong>
+            <small>Isi: Auto-Tapper, Multiplier, Candy Magnet</small>
+            <br>
+            <small class="text-muted">
+              <img src="/static/img/candy.png" style="width: 25px; height: 25px; object-fit: contain; vertical-align: middle;"> 1000 
+              | Upgrade: 
+              <img src="/static/img/diamond.png" style="width: 27px; height: 27px; object-fit: contain; vertical-align: middle;"> 7
+            </small>
+          </div>
+          <button class="btn btn-warning btn-sm" onclick="buyItem('daily_deal', 1000)">Beli</button>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+

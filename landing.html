@@ -1,0 +1,70 @@
+<!-- templates/landing.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Selamat Datang | CandyGold</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #F9FCFE;
+      flex-direction: column;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #3E3A9F;
+    }
+
+    .auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 260px;
+      margin-top: 10px;
+    }
+
+    .auth-buttons button {
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .google { background: #DB4437; color: white; }
+    .facebook { background: #4267B2; color: white; }
+    .email { background: #4B4B63; color: white; }
+    .manual { background: #FFF6B7; color: #3E3A9F; }
+
+    .auth-buttons button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="KlikCuan" class="logo" />
+  <div class="title">Selamat Datang di CandyGold 🍬</div>
+  <div class="auth-buttons">
+    <button class="google">Lanjutkan dengan Google</button>
+    <button class="facebook">Lanjutkan dengan Facebook</button>
+    <button class="email">Lanjutkan dengan Email</button>
+    <form action="/login" method="get">
+      <button class="manual" type="submit">Login / Daftar Manual</button>
+    </form>
+  </div>
+</body>
+</html>

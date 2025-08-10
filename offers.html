@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #fff3ad, #f5dd74);
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+  }
+
+  .offers-container {
+    max-width: 960px;
+    margin: auto;
+    padding: 2rem 1rem;
+  }
+
+  .offer-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    color: #FFF6B7;
+    text-shadow: 1px 1px 2px #00000066;
+  }
+
+  .card-offer {
+    background: #2D2E50;
+    border: 2px solid #3E3A9F;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .card-offer:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4);
+  }
+
+  .offer-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 2px solid #FFF6B7;
+  }
+
+  .offer-body {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .offer-title-mini {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #C7F3F8;
+    margin-bottom: 0.3rem;
+  }
+
+  .offer-reward {
+    font-size: 1rem;
+    color: #FFF6B7;
+    margin: 0.2rem 0;
+  }
+
+  .offer-desc {
+    font-size: 0.9rem;
+    color: #ddd;
+    margin-bottom: 0.6rem;
+  }
+
+  .offer-btn {
+    background-color: #FFF6B7;
+    color: #3E3A9F;
+    font-weight: bold;
+    padding: 0.4rem 1rem;
+    border: none;
+    border-radius: 12px;
+    transition: background 0.2s ease;
+  }
+
+  .offer-btn:hover {
+    background-color: #ffe96b;
+  }
+</style>
+
+<div class="offers-container">
+  <div class="offer-title">🎯 Misi Penawaran</div>
+
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    <!-- Misi 1 -->
+    <div class="col">
+      <div class="card-offer">
+        <img src="https://via.placeholder.com/100x100?text=FreeFire" class="offer-img" alt="FreeFire">
+        <div class="offer-body">
+          <div class="offer-title-mini">FreeFire</div>
+          <div class="offer-reward">🎁 1000 Permen</div>
+          <div class="offer-desc">Mainkan FreeFire selama 10 menit dan capai level 3 untuk klaim reward!</div>
+          <button class="offer-btn">Mulai Misi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Misi 2 -->
+    <div class="col">
+      <div class="card-offer">
+        <img src="https://via.placeholder.com/100x100?text=AkuBlu" class="offer-img" alt="AkuBlu App">
+        <div class="offer-body">
+          <div class="offer-title-mini">AkuBlu App</div>
+          <div class="offer-reward">🎁 1200 Permen</div>
+          <div class="offer-desc">Download dan login ke AkuBlu, lalu selesaikan 1 pembelian untuk dapat permen.</div>
+          <button class="offer-btn">Mulai Misi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tambahkan misi lainnya sesuai kebutuhan -->
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+

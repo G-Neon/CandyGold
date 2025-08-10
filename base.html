@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CandyGold{% endblock %}</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  body {
+    animation: bgmove 10s infinite linear;
+    background: linear-gradient(-45deg, #ffffff, #f6d159, #ffffff, #f6d159);
+    background-size: 400% 400%;
+    font-family: 'Segoe UI', sans-serif;
+    color: #4B4B63;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 80px; /* disesuaikan dengan tinggi footernya */
+  }
+
+  @keyframes bgmove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .card-style {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    z-index: 2;
+    position: relative;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
+</style>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Optional: Banner global di atas konten -->
+  <div class="global-banner text-center py-2">
+    <img src="/static/img/banner_global.png" style="max-width:100%; border-radius: 8px;" alt="Promo">
+  </div>
+
+  {% block content %}{% endblock %}
+<footer id="bottom-nav">
+  <button class="nav-btn {% if request.path == '/dashboard' %}active{% endif %}" onclick="location.href='/dashboard'">
+    <img src="{{ url_for('static', filename='img/Beranda.png') }}" class="icon" alt="Beranda">
+    <small>Beranda</small>
+  </button>
+
+  <button class="nav-btn locked" onclick="showComingSoon()">
+    <div class="lock-icon">🔒</div> <!-- 🔒 Gembok -->
+    <img src="{{ url_for('static', filename='img/misi offerwalls.png') }}" class="icon" alt="Misi">
+    <small>Misi</small>
+  </button>
+
+  <button class="nav-btn {% if request.path == '/penarikan' %}active{% endif %}" onclick="location.href='/penarikan'">
+    <img src="{{ url_for('static', filename='img/tarik candygold.png') }}" class="icon" alt="Tarik">
+    <small>Tarik</small>
+  </button>
+
+  <button class="nav-btn {% if request.path == '/toko' %}active{% endif %}" onclick="location.href='/toko'">
+    <img src="{{ url_for('static', filename='img/toko.png') }}" class="icon" alt="Toko">
+    <small>Toko</small>
+  </button>
+
+  <button class="nav-btn {% if request.path == '/profile' %}active{% endif %}" onclick="location.href='/profile'">
+    <img src="{{ url_for('static', filename='img/akun profil.png') }}" class="icon" alt="Profil">
+    <small>Profil</small>
+  </button>
+</footer>
+
+  <!-- Bootstrap JS (for modal, dropdown, etc) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
+
+    <!-- Permen Hujan -->
+  <div id="candy-container"></div>
+  <style>
+    #candy-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .candy {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-image: url('https://i.imgur.com/QbG6zR3.png'); /* Ganti dengan gambar permen kamu */
+      background-size: cover;
+      animation: fall linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+        /* MENU */
+    nav {
+    margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+    max-width: 320px;
+    }
+
+    .menu-button {
+    background-color: #4B4B63;
+    color: white;
+    padding: 1rem;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    }
+
+    .menu-button:hover {
+    background-color: #f6b100;
+    color: #1A1A29;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    #bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.6); /* Glass effect */
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+      padding: 0 10px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 18px;
+      color: #4B4B63;
+      cursor: pointer;
+      transition: transform 0.2s ease, color 0.2s ease;
+      position: relative;
+    }
+
+      .lock-icon {
+      position: absolute;
+      top: -4px;
+      right: 1px;
+      font-size: 14px;
+      color: #c0392b;
+      animation: shake 1.5s infinite ease-in-out;
+      z-index: 2;
+    }
+
+    /* Animasi goyang */
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(5deg); }
+      50% { transform: rotate(-5deg); }
+      75% { transform: rotate(4deg); }
+    }
+
+    .nav-btn:hover {
+      transform: scale(1.1);
+      color: #F6B100;
+    }
+
+    .nav-btn.active {
+      color: #3E3A9F;
+      font-weight: bold;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-btn .icon {
+      font-size: 20px;
+    }
+
+    .nav-btn small {
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .popup-coming-soon {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      animation: popScale 0.3s ease forwards;
+      max-width: 300px;
+    }
+
+    .popup-coming-soon h3 {
+      color: #3E3A9F;
+      margin-bottom: 0.5rem;
+    }
+
+    .popup-coming-soon p {
+      color: #4B4B63;
+      font-size: 0.95rem;
+    }
+
+    .popup-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 9998;
+    }
+
+    @keyframes popScale {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .popup-emoji {
+      font-size: 3rem;
+      animation: wiggle 0.5s ease-in-out infinite alternate;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes wiggle {
+      0% { transform: rotate(-10deg); }
+      100% { transform: rotate(10deg); }
+    }
+
+  </style>
+
+  <script>
+    const container = document.getElementById('candy-container');
+
+    function createCandy() {
+      const candy = document.createElement('div');
+      candy.classList.add('candy');
+      candy.style.left = Math.random() * 100 + 'vw';
+      candy.style.animationDuration = (2 + Math.random() * 3) + 's';
+      candy.style.top = '-30px';
+      container.appendChild(candy);
+      setTimeout(() => candy.remove(), 5000);
+    }
+
+    setInterval(createCandy, 300);
+
+    function showComingSoon() {
+      document.getElementById("comingSoonPopup").style.display = "block";
+    }
+
+    function hideComingSoon() {
+      document.getElementById("comingSoonPopup").style.display = "none";
+    }
+
+</script>
+
+  <div id="comingSoonPopup" style="display: none;">
+    <div class="popup-bg" onclick="hideComingSoon()"></div>
+    <div class="popup-coming-soon">
+      <div class="popup-emoji">🔐</div>
+      <h3>Coming Soon!</h3>
+      <p>Fitur Misi sedang dibuat. Siap-siap ya!</p>
+      <button class="btn btn-warning mt-2" onclick="hideComingSoon()">Oke!</button>
+    </div>
+  </div>
+
+</body>
+</html>

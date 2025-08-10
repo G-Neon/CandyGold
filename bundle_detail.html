@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="detail-container">
+  <h2>{{ bundle.name }}</h2>
+  <img src="{{ url_for('static', filename=bundle.image) }}" alt="Paket" class="detail-img">
+  <p class="desc">{{ bundle.description }}</p>
+  <p><strong>Harga:</strong>
+    {% if bundle.price_candy %}
+      {{ bundle.price_candy }} 🍬 Candy
+    {% endif %}
+    {% if bundle.price_rp %}
+      | Rp{{ "{:,}".format(bundle.price_rp) }}
+    {% endif %}
+  </p>
+  <a href="{{ url_for('buy_bundle', bundle_id=bundle.id) }}" class="buy-btn">Beli Sekarang</a>
+</div>
+<style>
+.detail-container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.detail-img {
+  width: 100%;
+  border-radius: 1rem;
+}
+.desc {
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+.buy-btn {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  background-color: #3E3A9F;
+  color: white;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: bold;
+}
+</style>
+{% endblock %}
