@@ -1,13 +1,15 @@
 import os
-import sqlite3
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify
-from flask_dance.contrib.google import make_google_blueprint, google
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import login_required, current_user
 
-db = SQLAlchemy()
+app = Flask(__name__)
+
+# Folder /tmp adalah writable di Vercel
+db_path = os.path.join('/tmp', 'database.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'  # atau sesuai DB kamu
@@ -707,4 +709,5 @@ if __name__ == '__main__':
     create_tables()  # ← Panggil ini sebelum app.run
     init_checkin_table()
     app.run(debug=True)
+
 
