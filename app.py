@@ -1,4 +1,5 @@
 import os
+import sqlite3
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify
@@ -78,14 +79,14 @@ def login():
     c = conn.cursor()
 
     # Cek apakah user sudah ada
-    c.execute("SELECT id FROM users WHERE email = ?", (user_email,))
+    cur.execute("SELECT id FROM users WHERE email = ?", (user_email,))
     row = c.fetchone()
 
     if row:
         user_id = row[0]
     else:
         # Tambahkan user baru
-        c.execute("INSERT INTO users (username, email, name) VALUES (?, ?, ?)", (user_name, user_email, user_name))
+        cur.execute("INSERT INTO users (username, email, name) VALUES (?, ?, ?)", (user_name, user_email, user_name))
         conn.commit()
         user_id = c.lastrowid
 
@@ -130,7 +131,7 @@ def google_callback():
 
         ref_code = generate_referral_code()
 
-        c.execute("INSERT INTO users (name, email, avatar, balance, referral_code) VALUES (?, ?, ?, ?, ?)",
+        cur.execute("INSERT INTO users (name, email, avatar, balance, referral_code) VALUES (?, ?, ?, ?, ?)",
                 (user_name, user_email, user_avatar, 0, ref_code))
 
         conn.commit()
@@ -164,7 +165,7 @@ def dashboard():
     c = conn.cursor()
     for i in range(7):
         tanggal = (datetime.now() - timedelta(days=6 - i)).strftime('%Y-%m-%d')
-        c.execute("SELECT 1 FROM task_claims WHERE user_id=? AND task_title='checkin' AND tanggal=?", 
+        cur.execute("SELECT 1 FROM task_claims WHERE user_id=? AND task_title='checkin' AND tanggal=?", 
                 (user_id, tanggal))
         result = c.fetchone()
         checkins.append(bool(result))
@@ -179,7 +180,7 @@ def dashboard():
         # ⬇️ Ambil jumlah permen user
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    c.execute("SELECT candy_balance FROM users WHERE id = ?", (user_id,))
+    cur.execute("SELECT candy_balance FROM users WHERE id = ?", (user_id,))
     result = c.fetchone()
     candy_balance = result[0] if result else 0
     conn.close()
@@ -240,6 +241,7 @@ def edit_profile():
     username = request.form.get("username")
     email = request.form.get("email")
 
+    conn = sqlite3.connect('database.db')
     cur = conn.cursor()
     cur.execute("UPDATE users SET username = ?, email = ? WHERE id = ?", (username, email, session["user_id"]))
     conn.commit()
@@ -315,7 +317,7 @@ def create_tables():
     c = conn.cursor()
 
     # Tabel users
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
+    cur.execute('''CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT,
         password TEXT,
@@ -326,7 +328,7 @@ def create_tables():
     )''')
 
     # Tabel daily_claims
-    c.execute('''CREATE TABLE IF NOT EXISTS daily_claims (
+    cur.execute('''CREATE TABLE IF NOT EXISTS daily_claims (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         day INTEGER,
@@ -335,7 +337,7 @@ def create_tables():
     )''')
 
     # Tabel task_claims
-    c.execute('''CREATE TABLE IF NOT EXISTS task_claims (
+    cur.execute('''CREATE TABLE IF NOT EXISTS task_claims (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         task_title TEXT,
@@ -413,13 +415,13 @@ def penarikan():
     c = conn.cursor()
 
     # Ambil balance
-    c.execute("SELECT candy_balance FROM users WHERE id = ?", (user_id,))
+    cur.execute("SELECT candy_balance FROM users WHERE id = ?", (user_id,))
     result = c.fetchone()
     candy_balance = result[0] if result else 0
     rupiah_estimate = candy_balance * 100 / 1000
 
     # Ambil riwayat penarikan
-    c.execute("SELECT method, candy_amount, rupiah_amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+    cur.execute("SELECT method, candy_amount, rupiah_amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
     history = c.fetchall()
 
     conn.close()
@@ -461,17 +463,17 @@ def withdraw():
     c = conn.cursor()
 
     # Cek saldo
-    c.execute("SELECT candy_balance FROM users WHERE id = ?", (user_id,))
+    cur.execute("SELECT candy_balance FROM users WHERE id = ?", (user_id,))
     current_balance = c.fetchone()[0]
     if current_balance < candy_cost:
         conn.close()
         return "Saldo tidak cukup", 400
 
     # Kurangi saldo
-    c.execute("UPDATE users SET candy_balance = candy_balance - ? WHERE id = ?", (candy_cost, user_id))
+    cur.execute("UPDATE users SET candy_balance = candy_balance - ? WHERE id = ?", (candy_cost, user_id))
 
     # Simpan riwayat penarikan
-    c.execute("""
+    cur.execute("""
         INSERT INTO withdrawals (user_id, method, candy_amount, rupiah_amount, status)
         VALUES (?, ?, ?, ?, 'pending')
     """, (user_id, method, candy_cost, rupiah))
@@ -493,7 +495,7 @@ def add_candy():
 
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    c.execute("UPDATE users SET candy_balance = candy_balance + ? WHERE id = ?", (amount, user_id))
+    cur.execute("UPDATE users SET candy_balance = candy_balance + ? WHERE id = ?", (amount, user_id))
     conn.commit()
     conn.close()
 
@@ -511,7 +513,7 @@ def tap():
     # Tambahkan candy ke user di database
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
-    c.execute("UPDATE users SET candy = candy + ? WHERE id = ?", (amount, user_id))
+    cur.execute("UPDATE users SET candy = candy + ? WHERE id = ?", (amount, user_id))
     conn.commit()
     conn.close()
 
@@ -527,13 +529,13 @@ def claim_task():
     c = conn.cursor()
 
     # Cek apakah sudah klaim sebelumnya
-    c.execute("SELECT * FROM task_claims WHERE user_id=? AND task_title=? AND tanggal=?", 
+    cur.execute("SELECT * FROM task_claims WHERE user_id=? AND task_title=? AND tanggal=?", 
               (user_id, task_title, tanggal))
     if c.fetchone():
         conn.close()
         return jsonify({'status': 'already_claimed'})
 
-    c.execute("INSERT INTO task_claims (user_id, task_title, claimed, tanggal) VALUES (?, ?, 1, ?)", 
+    cur.execute("INSERT INTO task_claims (user_id, task_title, claimed, tanggal) VALUES (?, ?, 1, ?)", 
               (user_id, task_title, tanggal))
     conn.commit()
     conn.close()
@@ -658,7 +660,7 @@ def buy(item_id):
     # Ambil saldo user dari DB
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    c.execute("SELECT balance, candy_balance FROM users WHERE id = ?", (user_id,))
+    cur.execute("SELECT balance, candy_balance FROM users WHERE id = ?", (user_id,))
     row = c.fetchone()
     if not row:
         conn.close()
@@ -673,15 +675,15 @@ def buy(item_id):
         return jsonify({'success': False, 'message': 'Saldo tidak cukup. Silakan top up.'}), 402
 
     # Proses: kurangi saldo
-    c.execute("UPDATE users SET balance = balance - ? WHERE id = ?", (price, user_id))
+    cur.execute("UPDATE users SET balance = balance - ? WHERE id = ?", (price, user_id))
 
     # Jika paket diamond, tambahkan candy_balance (jumlah diamond)
     if item.get('type') == 'diamond':
         amount = int(item.get('amount', 0))
-        c.execute("UPDATE users SET candy_balance = candy_balance + ? WHERE id = ?", (amount, user_id))
+        cur.execute("UPDATE users SET candy_balance = candy_balance + ? WHERE id = ?", (amount, user_id))
 
     # Buat tabel transaksi jika belum ada, lalu simpan transaksi
-    c.execute('''CREATE TABLE IF NOT EXISTS transactions (
+    cur.execute('''CREATE TABLE IF NOT EXISTS transactions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER,
                     item_id TEXT,
@@ -689,7 +691,7 @@ def buy(item_id):
                     price INTEGER,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )''')
-    c.execute("INSERT INTO transactions (user_id, item_id, item_desc, price) VALUES (?, ?, ?, ?)",
+    cur.execute("INSERT INTO transactions (user_id, item_id, item_desc, price) VALUES (?, ?, ?, ?)",
               (user_id, item_id, item['desc'], price))
 
     conn.commit()
@@ -705,3 +707,4 @@ if __name__ == '__main__':
     create_tables()  # ← Panggil ini sebelum app.run
     init_checkin_table()
     app.run(debug=True)
+
